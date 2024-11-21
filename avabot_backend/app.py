@@ -10,12 +10,19 @@ app.secret_key = "my-key"
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    id = request.form["id"]
-    if "agent-id" not in session.keys():
-        session["agent-id"] = id
-    message = request.form["text"]
-    response, products = AvabotAgent.chat(id, message, dev=False)
-    return jsonify({"response": response, "products": products})
+    try:
+        id = request.form.get("id")
+        message = str(request.form.get("text"))
+        
+        if "agent-id" not in session.keys():
+            session["agent-id"] = id
+            
+        response, products = AvabotAgent.chat(id, message, dev=False)
+        return jsonify({"response": response, "products": products}), 201
+    except Exception as e:
+        print(e)
+        return jsonify({"response": "There was server error in avabot backend."}), 201
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0")
