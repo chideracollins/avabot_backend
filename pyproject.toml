@@ -12,6 +12,7 @@ langchain = "^0.3.7"
 langchain-google-genai = "^2.0.4"
 requests = "^2.32.3"
 python-dotenv = "^1.0.1"
+gunicorn = "^23.0.0"
 
 
 [tool.poetry-auto-export]
