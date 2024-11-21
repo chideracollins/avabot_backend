@@ -88,7 +88,7 @@ class AvabotAgent:
     agents = []
 
     def __init__(self, id):
-        self.id = id
+        self._id = id
         self._chat_history = []
         self._products = None
         """Used to keep track of the retrieved products for the current user query - ai reply cycle."""
@@ -97,7 +97,7 @@ class AvabotAgent:
     def _get_or_create(cls, agent_id):
         if len(cls.agents) > 0:
             for agent in cls.agents:
-                if agent.id == agent_id:
+                if agent._id == agent_id:
                     return agent
 
         agent = cls(agent_id)
@@ -108,7 +108,7 @@ class AvabotAgent:
     def _get_products(self):
         from avabot_backend.tools import get_retrieved_products
 
-        self._products = get_retrieved_products(self.id)
+        self._products = get_retrieved_products(self._id)
 
     def _reply(self, message):
         response = self._agent_executor.invoke(
@@ -120,26 +120,14 @@ class AvabotAgent:
         self._get_products
         self._chat_history.append(HumanMessage(message))
         self._chat_history.append(AIMessage(response["output"]))
+        print(self._chat_history)
         return response["output"]
 
     @classmethod
-    def chat(cls, user_id, user_message, dev=True):
-        if dev:
-            agent = cls._get_or_create("test-agent")
-            print("\n\n........AI response.......")
-            # print(agent._reply(user))
-            print(f"Products found: {agent._products}")
-        else:
-            agent = cls._get_or_create(user_id)
-            # message = []
-            reply = agent._reply(user_message)
-            return reply, agent._products
+    def chat(cls, user_id, user_message):
+        agent = cls._get_or_create(user_id)
+        reply = agent._reply(user_message)
+        return reply, agent._products
 
 
-if __name__ == "__main__":
-    while True:
-        msg = input("Your message: ")
-        if msg.lower() == "q":
-            break
 
-        # AvabotAgent.chat(msg)

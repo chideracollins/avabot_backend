@@ -20,7 +20,6 @@ def _search(endpoint: str, params: dict = None):
 
     try:
         response = requests.get(url, params=params)
-        print(f"\n\nhere's the url: {response.url}\n")
         time.sleep(5)
         return response
     except:
@@ -65,11 +64,11 @@ def get_products_for_display(
                 
                 id = session["agent-id"]
                 successful_retrievals.append(response.text)
+                
                 if id in retrieved_products.keys():
                     retrieved_products[id].append(response.json())
                 else:
                     retrieved_products[id] = [response.json()]
-                print(f"The current set of retrieved products: {retrieved_products}")
 
     return f"Products retrieval was successful. And will be displayed to user in the app programatically, dont't try to mimick the products display in your final response to the user, as that will be handled in the best way possible by the app. Now go ahead and reply user in the best way possible, bearing in mind that these set of products were sucessfully retrieved: {successful_retrievals}"
 
@@ -124,7 +123,6 @@ def search_products(
                     break
 
                 total_products_retrieved += response.json()["total"]
-                print(f"Total products retrieved currently: {total_products_retrieved}")
                 results += f" {response.text}"
 
     if results == "":
