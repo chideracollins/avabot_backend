@@ -19,7 +19,7 @@ def chat():
         if "agent-id" not in session.keys():
             session["agent-id"] = id
 
-        response, products = AvabotAgent.chat(id, message, dev=False)
+        response, products = AvabotAgent.chat(id, message)
         return jsonify({"response": response, "products": products}), 201
     except Exception as e:
         print(e)
