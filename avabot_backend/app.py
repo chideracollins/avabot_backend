@@ -23,7 +23,7 @@ def chat():
         return jsonify({"response": response, "products": products}), 201
     except Exception as e:
         print(e)
-        return jsonify({"response": "There was server error in avabot backend."}), 201
+        return jsonify({"response": "There was server error in avabot backend.", "products": [{"id": 1}]}), 201
 
 
 if __name__ == "__main__":

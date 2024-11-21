@@ -131,8 +131,8 @@ class AvabotAgent:
             print(f"Products found: {agent._products}")
         else:
             agent = cls._get_or_create(user_id)
-            message = []
-            reply = agent._reply(message)
+            # message = []
+            reply = agent._reply(user_message)
             return reply, agent._products
 
 
