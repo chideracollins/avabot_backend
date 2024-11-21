@@ -16,3 +16,6 @@ def chat():
     message = request.form["text"]
     response, products = AvabotAgent.chat(id, message, dev=False)
     return jsonify({"response": response, "products": products})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0")
