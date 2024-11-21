@@ -127,7 +127,9 @@ class AvabotAgent:
     def chat(cls, user_id, user_message):
         agent = cls._get_or_create(user_id)
         reply = agent._reply(user_message)
-        return reply, agent._products
+        products = agent._products
+        agent._products.clear()
+        return reply, products
 
 
 
