@@ -61,11 +61,14 @@ def get_products_for_display(
 
         if response:
             if response.status_code == 200:
+                from flask import session
+                
+                id = session["agent-id"]
                 successful_retrievals.append(response.text)
-                if "test-agent" in retrieved_products.keys():
-                    retrieved_products["test-agent"].append(response.json())
+                if id in retrieved_products.keys():
+                    retrieved_products[id].append(response.json())
                 else:
-                    retrieved_products["test-agent"] = [response.json()]
+                    retrieved_products[id] = [response.json()]
                 print(f"The current set of retrieved products: {retrieved_products}")
 
     return f"Products retrieval was successful. And will be displayed to user in the app programatically, dont't try to mimick the products display in your final response to the user, as that will be handled in the best way possible by the app. Now go ahead and reply user in the best way possible, bearing in mind that these set of products were sucessfully retrieved: {successful_retrievals}"

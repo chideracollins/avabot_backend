@@ -95,14 +95,11 @@ class AvabotAgent:
 
     @classmethod
     def _get_or_create(cls, agent_id):
-        # from flask import session
-
         if len(cls.agents) > 0:
             for agent in cls.agents:
                 if agent.id == agent_id:
                     return agent
 
-        # session["agent-id"] = agent_id
         agent = cls(agent_id)
         cls.agents.append(agent)
         return agent
@@ -126,16 +123,17 @@ class AvabotAgent:
         return response["output"]
 
     @classmethod
-    def chat(cls, user, dev=True):
+    def chat(cls, user_id, user_message, dev=True):
         if dev:
             agent = cls._get_or_create("test-agent")
             print("\n\n........AI response.......")
-            print(agent._reply(user))
+            # print(agent._reply(user))
             print(f"Products found: {agent._products}")
         else:
-            agent = cls._get_or_create(user["uid"])
+            agent = cls._get_or_create(user_id)
             message = []
-            return agent._reply(message)
+            reply = agent._reply(message)
+            return reply, agent._products
 
 
 if __name__ == "__main__":
@@ -144,4 +142,4 @@ if __name__ == "__main__":
         if msg.lower() == "q":
             break
 
-        AvabotAgent.chat(msg)
+        # AvabotAgent.chat(msg)
