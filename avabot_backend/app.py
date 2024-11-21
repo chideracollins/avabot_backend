@@ -1,9 +1,11 @@
 from flask import Flask, jsonify, request, session
+from flask-cors import CORS
 
 from avabot_backend.avabot_agent import AvabotAgent
 
 
 app = Flask(__name__)
+CORS(app)
 
 app.secret_key = "my-key"
 
