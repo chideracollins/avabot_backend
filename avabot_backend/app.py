@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request, session
-from flask-cors import CORS
+from flask_cors import CORS
 
 from avabot_backend.avabot_agent import AvabotAgent
 
