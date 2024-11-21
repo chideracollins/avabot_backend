@@ -20,6 +20,7 @@ def chat():
             session["agent-id"] = id
 
         response, products = AvabotAgent.chat(id, message)
+        print(f"\n\nHere is the list of retrieved products: {products}\n")
         return jsonify({"response": response, "products": products}), 201
     except Exception as e:
         print(e)
