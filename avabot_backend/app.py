@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request, session
 from avabot_backend.avabot_agent import AvabotAgent
 
 
-app = Flask()
+app = Flask(__name__)
 
 app.secret_key = "my-key"
 
