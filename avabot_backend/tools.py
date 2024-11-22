@@ -11,6 +11,8 @@ def get_retrieved_products(id):
     for user_id in retrieved_products.keys():
         if user_id == id:
             return retrieved_products[user_id]
+    
+    return []
 
 
 def _search(endpoint: str, params: dict = None):
