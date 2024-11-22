@@ -90,7 +90,7 @@ class AvabotAgent:
     def __init__(self, id):
         self._id = id
         self._chat_history = []
-        self._products = None
+        self._products = []
         """Used to keep track of the retrieved products for the current user query - ai reply cycle."""
 
     @classmethod
