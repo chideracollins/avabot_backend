@@ -14,17 +14,33 @@ app.secret_key = "my-key"
 def chat():
     try:
         id = request.form.get("id")
-        message = str(request.form.get("text"))
+        message = request.form.get("text")
+        image_url = request.form.get("image-url")
+        chat_history = request.form.get("chat-history")
 
         if "agent-id" not in session.keys():
             session["agent-id"] = id
 
-        response, products = AvabotAgent.chat(id, message)
-        print(f"\n\nHere is the list of retrieved products: {products}\n")
-        return jsonify({"response": response, "products": products}), 201
-    except Exception as e:
-        print(e)
-        return jsonify({"response": "There was server error in avabot backend."}), 201
+        response, products, chat_history = AvabotAgent.chat(
+            id, chat_history, message, image_url
+        )
+        return (
+            jsonify(
+                {
+                    "response": response,
+                    "products": products,
+                    "chat-history": chat_history,
+                }
+            ),
+            201,
+        )
+    except Exception:
+        return (
+            jsonify(
+                {"response": "There was server error in avabot backend. Try again!"}
+            ),
+            201,
+        )
 
 
 if __name__ == "__main__":

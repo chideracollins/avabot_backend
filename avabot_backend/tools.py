@@ -2,7 +2,6 @@ from langchain_core.tools import tool
 import requests
 from typing import Annotated, List
 
-import time
 
 retrieved_products = {}
 
@@ -10,19 +9,20 @@ retrieved_products = {}
 def get_retrieved_products(id):
     for user_id in retrieved_products.keys():
         if user_id == id:
-            return retrieved_products[user_id]
-    
+            products = retrieved_products[user_id].copy()
+            del retrieved_products[user_id]
+            return products
+
     return []
 
 
-def _search(endpoint: str, params: dict = None):
+def _search_dummyjson(endpoint: str, params: dict = None):
     base_url = "https://dummyjson.com/products/"
 
     url = base_url + endpoint
 
     try:
         response = requests.get(url, params=params)
-        time.sleep(5)
         return response
     except:
         pass
@@ -32,11 +32,12 @@ def _search(endpoint: str, params: dict = None):
 def get_products_for_display(
     products: Annotated[List[int], "List of product id's to retrieve."]
 ) -> str:
-    """Use this tool to retrieve a product or list of products by their product id's, for display to user in the app. Always use this after you have used the 'search_products' tool.
+    """Use this tool to retrieve a product or list of products by their product id's, that will be displayed to user in the app. Always use this after you have used the 'search_products' tool.
 
     To make use of this tool, specify an action as follows:
     Action:
     ```json
+    
     {
     "action": "get_products_for_display",
     "action_input": {
@@ -53,7 +54,7 @@ def get_products_for_display(
     successful_retrievals = []
 
     for product_id in products:
-        response = _search(
+        response = _search_dummyjson(
             str(product_id),
             params={
                 "select": "id,title,description,price,discountPercentage,thumbnail"
@@ -63,10 +64,10 @@ def get_products_for_display(
         if response:
             if response.status_code == 200:
                 from flask import session
-                
+
                 id = session["agent-id"]
                 successful_retrievals.append(response.text)
-                
+
                 if id in retrieved_products.keys():
                     retrieved_products[id].append(response.json())
                 else:
@@ -75,7 +76,7 @@ def get_products_for_display(
     return f"Products retrieval was successful. And will be displayed to user in the app programatically, dont't try to mimick the products display in your final response to the user, as that will be handled in the best way possible by the app. Now go ahead and reply user in the best way possible, bearing in mind that these set of products were sucessfully retrieved: {successful_retrievals}"
 
 
-def _augument_products_list(products: List[str]) -> List:
+def _augument_search_products_list(products: List[str]) -> List:
     new_search_keywords = []
 
     for product in products:
@@ -106,15 +107,16 @@ def search_products(
     Make sure to fill the products list with the list of products names to search for.
     """
 
+    print("The search keywords: ", products)
     if len(products) == 0:
         return "You didn't provide any product to look up, please provide a whitespace separated list of products to search."
 
-    products += _augument_products_list(products)
+    products += _augument_search_products_list(products)
     total_products_retrieved = 0
     results = ""
 
     for product in products:
-        response = _search("search", params={"q": product, "limit": 20})
+        response = _search_dummyjson("search", params={"q": product, "limit": 10})
 
         if response:
             if response.status_code == 200:
