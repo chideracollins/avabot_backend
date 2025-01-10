@@ -134,7 +134,7 @@ class AvabotAgent:
                 (
                     "human",
                     [
-                        {"type": "text", "text": cls._human_message},
+                        {"type": "text", "text": message},
                         {
                             "type": "image_url",
                             "image_url": {
