@@ -75,96 +75,122 @@ class AvabotAgent:
         search_products,
     ]
 
-    @classmethod
-    def _create_agent_executor(cls, add_image=False):
-        if add_image:
-            _prompt = ChatPromptTemplate.from_messages(
-                [
-                    ("system", cls._system_message),
-                    MessagesPlaceholder("chat_history", optional=True),
-                    (
-                        "human",
-                        [
-                            {"type": "text", "text": cls._human_message},
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": "data:image/jpeg;base64,{image_data}",
-                                },
-                            },
-                        ],
-                    ),
-                ]
-            )
-        else:
-            _prompt = ChatPromptTemplate.from_messages(
-                [
-                    ("system", cls._system_message),
-                    MessagesPlaceholder("chat_history", optional=True),
-                    ("human", cls._human_message),
-                ]
-            )
+    _prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", _system_message),
+            MessagesPlaceholder("chat_history", optional=True),
+            ("human", _human_message),
+        ]
+    )
 
-        agent = create_structured_chat_agent(
-            llm=cls._model, tools=cls._tools, prompt=_prompt
-        )
-        agent_executor = AgentExecutor.from_agent_and_tools(
-            agent=agent,
-            tools=cls._tools,
-            verbose=True,
-            handle_parsing_errors=True,
-        )
-        return agent_executor
+    _agent = create_structured_chat_agent(llm=_model, tools=_tools, prompt=_prompt)
+
+    _agent_executor = AgentExecutor.from_agent_and_tools(
+        agent=_agent,
+        tools=_tools,
+        verbose=True,
+        handle_parsing_errors=True,
+    )
 
     @classmethod
-    def chat(cls, id, chat_history, message, image_url):
+    def _download_and_resize_image(cls, image_url):
         import httpx
         from PIL import Image
 
         import base64
         from io import BytesIO
 
+        image = httpx.get(image_url)
+
+        try:
+            image.raise_for_status()
+        except:
+            return
+
+        with Image.open(BytesIO(image.content)) as img:
+            max_size = (100, 100)
+            img.thumbnail(max_size)
+
+            buffer = BytesIO()
+            img.save(buffer, format="JPEG", quality=85)
+            buffer.seek(0)
+
+        image_base64 = base64.b64encode(buffer.read()).decode("utf-8")
+        return image_base64
+
+    @classmethod
+    def _create_better_user_prompt(cls, message, image_url):
+        image_base64 = cls._download_and_resize_image(image_url)
+
+        if image_base64 is None:
+            return
+
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    "You are being provided with a user question, which includes an image. Understand it and provide a response that articulates clearly what the user is asking about. Always leave your response in a first person perspective, (i.e. let your response look like you are the person that asked the question initially, just that this time, you posed a more clear question, that captures the user's intent.)",
+                ),
+                (
+                    "human",
+                    [
+                        {"type": "text", "text": cls._human_message},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}",
+                            },
+                        },
+                    ],
+                ),
+            ]
+        )
+
+        response = cls._model.invoke(prompt)
+        return response.content
+
+    @classmethod
+    def _create_chat_history(history: dict):
+        chat_history = []
+        
+        for key, value in history.items():
+            chat_history.append(HumanMessage(key))
+            chat_history.append(AIMessage(value))
+            
+        return chat_history
+
+    @classmethod
+    def chat(cls, id, history, message, image_url):
         from avabot_backend.tools import get_retrieved_products
 
         if image_url:
-            image = httpx.get(image_url)
+            message = cls._create_better_user_prompt(message, image_url)
 
-            try:
-                image.raise_for_status()
-            except:
+            if message is None:
                 return (
                     "Sorry, the attached image file cannot be accessed.",
-                    get_retrieved_products(id),
-                    chat_history,
+                    None,
+                    history,
                 )
 
-            with Image.open(BytesIO(image.content)) as img:
-                max_size = (100, 100)
-                img.thumbnail(max_size)
-
-                buffer = BytesIO()
-                img.save(buffer, format="JPEG", quality=85)
-                buffer.seek(0)
-
-            image_base64 = base64.b64encode(buffer.read()).decode("utf-8")
-
+        if history:
             agent_input = {
                 "input": message,
-                "image_data": image_base64,
-                "chat_history": chat_history,
+                "chat_history": cls._create_chat_history(history),
             }
-            response = cls._create_agent_executor(True).invoke(agent_input)
         else:
+            history = {}
             agent_input = {
                 "input": message,
-                "chat_history": chat_history,
             }
-            response = cls._create_agent_executor().invoke(agent_input)
 
-        chat_history.append(HumanMessage(message))
-        chat_history.append(AIMessage(response["output"]))
+        response = cls._agent_executor.invoke(agent_input)
 
-        return response["output"], get_retrieved_products(id), chat_history
+        products = get_retrieved_products(id)
+
+        history[message] = response["output"] + f"Attached products: {products}"
+
+        return response["output"], products, history
 
 
 if __name__ == "__main__":
@@ -176,8 +202,8 @@ if __name__ == "__main__":
             "https://upload.wikimedia.org/wikipedia/commons/4/41/Sunflower_from_Silesia2.jpg",
         )
     )
-    
-    # 
+
+    #
     # print(
     #     AvabotAgent.chat(
     #         "test",

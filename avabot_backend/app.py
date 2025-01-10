@@ -21,23 +21,41 @@ def chat():
         if "agent-id" not in session.keys():
             session["agent-id"] = id
 
+        if message is None:
+            message = "Do you sell this product?"
+
         response, products, chat_history = AvabotAgent.chat(
             id, chat_history, message, image_url
         )
+        payload = {"response": response}
+
+        if products:
+            payload["products"] = products
+
+        if chat_history:
+            payload["chat-history"] = chat_history
+
         return (
-            jsonify(
-                {
-                    "response": response,
-                    "products": products,
-                    "chat-history": chat_history,
-                }
-            ),
+            jsonify(payload),
             201,
         )
     except Exception:
+        if chat_history:
+            return (
+                jsonify(
+                    {
+                        "response": "There was server error in avabot backend. Try again!",
+                        "chat-history": chat_history,
+                    }
+                ),
+                201,
+            )
+
         return (
             jsonify(
-                {"response": "There was server error in avabot backend. Try again!"}
+                {
+                    "response": "There was server error in avabot backend. Try again!",
+                }
             ),
             201,
         )
