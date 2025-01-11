@@ -40,7 +40,8 @@ def chat():
             jsonify(payload),
             201,
         )
-    except Exception:
+    except Exception as e:
+        print(e)
         if chat_history:
             return (
                 jsonify(
