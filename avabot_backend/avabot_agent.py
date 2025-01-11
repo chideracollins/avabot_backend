@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from langchain.agents import AgentExecutor, create_structured_chat_agent
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -126,24 +126,21 @@ class AvabotAgent:
             return
 
         prompt = [
-                (
-                    "system",
-                    "You are being provided with a user question, which includes an image. Understand it and provide a response that articulates clearly what the user is asking about. Always leave your response in a first person perspective, (i.e. let your response look like you are the person that asked the question initially, just that this time, you posed a more clear question, that captures the user's intent.)",
-                ),
-                (
-                    "human",
-                    [
-                        {"type": "text", "text": message},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{image_base64}",
-                            },
+            SystemMessage(
+                content="You are being provided with a user question, which includes an image. Understand it and provide a response that articulates clearly what the user is asking about. Always leave your response in a first person perspective, (i.e. let your response look like you are the person that asked the question initially, just that this time, you posed a more clear question, that captures the user's intent.)"
+            ),
+            HumanMessage(
+                content=[
+                    {"type": "text", "text": message},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_base64}",
                         },
-                    ],
-                ),
-            ]
-        
+                    },
+                ]
+            ),
+        ]
 
         response = cls._model.invoke(prompt)
         return response.content
@@ -151,11 +148,11 @@ class AvabotAgent:
     @staticmethod
     def _create_chat_history(history: dict):
         chat_history = []
-        
+
         for key, value in history.items():
             chat_history.append(HumanMessage(key))
             chat_history.append(AIMessage(value))
-            
+
         return chat_history
 
     @classmethod
@@ -187,7 +184,7 @@ class AvabotAgent:
 
         products = get_retrieved_products(id)
 
-        history[message] = response["output"] + f"Attached products: {products}"
+        history[message] = response["output"] + f" Attached products: {products}"
 
         return response["output"], products, history
 
