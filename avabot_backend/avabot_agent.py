@@ -125,8 +125,7 @@ class AvabotAgent:
         if image_base64 is None:
             return
 
-        prompt = ChatPromptTemplate.from_messages(
-            [
+        prompt = [
                 (
                     "system",
                     "You are being provided with a user question, which includes an image. Understand it and provide a response that articulates clearly what the user is asking about. Always leave your response in a first person perspective, (i.e. let your response look like you are the person that asked the question initially, just that this time, you posed a more clear question, that captures the user's intent.)",
@@ -144,7 +143,7 @@ class AvabotAgent:
                     ],
                 ),
             ]
-        )
+        
 
         response = cls._model.invoke(prompt)
         return response.content
