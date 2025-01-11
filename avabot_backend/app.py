@@ -14,10 +14,10 @@ app.secret_key = "my-key"
 def chat():
     try:
         data = request.get_json()
-        id = data("id")
-        message = data("text")
-        image_url = data("image-url")
-        chat_history = data("chat-history")
+        id = data.get("id")
+        message = data.get("text")
+        image_url = data.get("image-url")
+        chat_history = data.get("chat-history")
 
         if "agent-id" not in session.keys():
             session["agent-id"] = id
