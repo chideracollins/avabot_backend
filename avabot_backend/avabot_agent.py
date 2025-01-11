@@ -149,7 +149,7 @@ class AvabotAgent:
         response = cls._model.invoke(prompt)
         return response.content
 
-    @classmethod
+    @staticmethod
     def _create_chat_history(history: dict):
         chat_history = []
         
