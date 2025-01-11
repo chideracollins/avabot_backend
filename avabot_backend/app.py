@@ -13,10 +13,11 @@ app.secret_key = "my-key"
 @app.route("/chat", methods=["POST"])
 def chat():
     try:
-        id = request.form.get("id")
-        message = request.form.get("text")
-        image_url = request.form.get("image-url")
-        chat_history = request.form.get("chat-history")
+        data = request.get_json()
+        id = data("id")
+        message = data("text")
+        image_url = data("image-url")
+        chat_history = data("chat-history")
 
         if "agent-id" not in session.keys():
             session["agent-id"] = id
