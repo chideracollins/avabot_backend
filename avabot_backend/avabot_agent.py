@@ -127,7 +127,7 @@ class AvabotAgent:
 
         prompt = [
             SystemMessage(
-                content="You are being provided with a user question, which includes an image. Understand it and provide a response that articulates clearly what the user is asking about. Always leave your response in a first person perspective, (i.e. let your response look like you are the person that asked the question initially, just that this time, you posed a more clear question, that captures the user's intent.)"
+                content="You are being provided with a user question, which includes an image. This question is meant for an AI shopping chatbot app called 'Avabot', but unfortunately, 'Avabot' doesn't understand images, it only understands texts. Your task is now to understand the user question together with the image and provide a response that articulates clearly what the user is asking about. Always provide your response in a first person perspective, (i.e. let your response look like you are the person that asked the question initially, just that this time, you posed a more clear question, that captures the user's intent). Remember, Avabot, doesn't have access to the image, nor does it understand images, so you have to be the one to interpret the image and provide a response that captures the user's intent. Never make any reference to the image in your response, just understand it and provide a response that asks the same question better, which will then be parsed to Avabot."
             ),
             HumanMessage(
                 content=[
