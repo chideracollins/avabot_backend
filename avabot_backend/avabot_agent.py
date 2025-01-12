@@ -108,7 +108,7 @@ class AvabotAgent:
             return
 
         with Image.open(BytesIO(image.content)) as img:
-            max_size = (100, 100)
+            max_size = (500, 500)
             img.thumbnail(max_size)
 
             buffer = BytesIO()
